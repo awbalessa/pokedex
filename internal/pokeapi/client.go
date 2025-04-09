@@ -25,9 +25,8 @@ type LocationArea struct {
 	Url  string `json:"url"`
 }
 
-func (c *PokeClient) get(path string) ([]byte, error) {
-	fullURL := c.BaseURL + path
-	req, err := http.NewRequest("GET", fullURL, nil)
+func (c *PokeClient) get(url string) ([]byte, error) {
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("Error creating request: %w", err)
 	}
@@ -64,7 +63,7 @@ func (c *PokeClient) GetLocationAreas(pageURL *string) (*LocationAreasResponse, 
 	if pageURL != nil {
 		endpoint = *pageURL
 	} else {
-		endpoint = c.BaseURL + "/location-area/?limit=20"
+		endpoint = c.BaseURL + "/location-area"
 	}
 	res, err := c.get(endpoint)
 	if err != nil {
