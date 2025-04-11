@@ -18,6 +18,7 @@ type cliCommand struct {
 type config struct {
 	next     *string
 	previous *string
+	pokedex  map[string]pokeapi.Pokemon
 }
 
 type repl struct {
@@ -33,6 +34,7 @@ func Init() *repl {
 		config: &config{
 			next:     nil,
 			previous: nil,
+			pokedex:  make(map[string]pokeapi.Pokemon),
 		},
 		client: &client,
 	}
@@ -139,6 +141,23 @@ func (r *repl) commandExplore(name string) error {
 }
 
 func (r *repl) commandCatch(name string) error {
+	pokemon, err := r.client.GetPokemon(name)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Throwing a Pokeball at %s...\n", name)
+	difficulty := max(0, (pokemon.BaseExperience / 34))
+	if attempt := rand.Intn(difficulty); attempt == 0 {
+		fmt.Printf("%s was caught!\n", name)
+		r.config.pokedex[name] = *pokemon
+	} else {
+		fmt.Printf("%s escaped!\n", name)
+		// add to pokedex
+	}
+	return nil
+}
+
+func (r *repl) commandInspect(name string) error {
 	pokemon, err := r.client.GetPokemon(name)
 	if err != nil {
 		return err
