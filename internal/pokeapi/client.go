@@ -149,6 +149,5 @@ func (c *PokeClient) GetPokemon(name string) (*Pokemon, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshalling: %w", err)
 	}
-	fmt.Println(pokemon)
 	return &pokemon, nil
 }
