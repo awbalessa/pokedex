@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"strings"
 
@@ -11,7 +12,7 @@ import (
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(args []string) error
 }
 
 type config struct {
@@ -38,23 +39,33 @@ func Init() *repl {
 	commands = map[string]cliCommand{
 		"exit": {
 			name:        "exit",
-			description: "Exit the Pokedex",
-			callback:    func() error { return r.commandExit() },
+			description: "Exits the Pokedex",
+			callback:    func(args []string) error { return r.commandExit() },
 		},
 		"help": {
 			name:        "help",
 			description: "Displays a help message",
-			callback:    func() error { return r.commandHelp() },
+			callback:    func(args []string) error { return r.commandHelp() },
 		},
 		"map": {
 			name:        "map",
 			description: "Provides the next 20 location areas",
-			callback:    func() error { return r.commandMap() },
+			callback:    func(args []string) error { return r.commandMap() },
 		},
 		"mapb": {
 			name:        "mapb",
 			description: "Provides the previous 20 location areas",
-			callback:    func() error { return r.commandMapb() },
+			callback:    func(args []string) error { return r.commandMapb() },
+		},
+		"explore": {
+			name:        "explore",
+			description: "Explores the Pokemon in the area",
+			callback:    func(args []string) error { return r.commandExplore(args[1]) },
+		},
+		"catch": {
+			name:        "catch",
+			description: "Throws a Pokeball at a Pokemon",
+			callback:    func(args []string) error { return r.commandCatch(args[1]) },
 		},
 	}
 	return r
@@ -110,6 +121,34 @@ func (r *repl) commandMapb() error {
 	r.config.previous = &areas.Previous
 	for _, result := range areas.Results {
 		fmt.Println(result.Name)
+	}
+	return nil
+}
+
+func (r *repl) commandExplore(name string) error {
+	areaPokemon, err := r.client.ExploreArea(name)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Exploring %s...", name)
+	fmt.Println("Found Pokemon:")
+	for _, encounter := range areaPokemon.PokemonEncounters {
+		fmt.Println(encounter.Pokemon.Name)
+	}
+	return nil
+}
+
+func (r *repl) commandCatch(name string) error {
+	pokemon, err := r.client.GetPokemon(name)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Throwing a Pokeball at %s...\n", name)
+	difficulty := max(0, (pokemon.BaseExperience / 34))
+	if attempt := rand.Intn(difficulty); attempt == 0 {
+		fmt.Printf("%s was caught!\n", name)
+	} else {
+		fmt.Printf("%s escaped!\n", name)
 	}
 	return nil
 }

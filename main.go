@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -16,8 +17,9 @@ func main() {
 			break
 		}
 		input := scanner.Text()
-		if cmd, exists := commands[input]; exists {
-			err := cmd.callback()
+		args := strings.Fields(input)
+		if cmd, exists := commands[args[0]]; exists {
+			err := cmd.callback(args)
 			if err != nil {
 				fmt.Println(err)
 			}
